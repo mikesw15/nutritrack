@@ -1,0 +1,38 @@
+{
+  "name": "ExerciseEntry",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "name": {
+      "type": "string",
+      "description": "Exercise name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "cardio",
+        "strength",
+        "flexibility",
+        "sports",
+        "other"
+      ]
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "calories_burned": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "name",
+    "calories_burned"
+  ]
+}

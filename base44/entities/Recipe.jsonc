@@ -1,0 +1,88 @@
+{
+  "name": "Recipe",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Recipe name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Recipe description"
+    },
+    "servings": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of servings"
+    },
+    "ingredients": {
+      "type": "array",
+      "description": "List of ingredients",
+      "items": {
+        "type": "object",
+        "properties": {
+          "food_name": {
+            "type": "string"
+          },
+          "food_item_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "calories": {
+            "type": "number"
+          },
+          "protein": {
+            "type": "number"
+          },
+          "carbs": {
+            "type": "number"
+          },
+          "fat": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total_calories": {
+      "type": "number",
+      "description": "Total calories for entire recipe"
+    },
+    "total_protein": {
+      "type": "number"
+    },
+    "total_carbs": {
+      "type": "number"
+    },
+    "total_fat": {
+      "type": "number"
+    },
+    "calories_per_serving": {
+      "type": "number"
+    },
+    "protein_per_serving": {
+      "type": "number"
+    },
+    "carbs_per_serving": {
+      "type": "number"
+    },
+    "fat_per_serving": {
+      "type": "number"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_favourite": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "servings"
+  ]
+}

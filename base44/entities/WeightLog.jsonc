@@ -1,0 +1,47 @@
+{
+  "name": "WeightLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of weigh-in"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight in kg"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "lbs",
+        "st"
+      ],
+      "default": "kg"
+    },
+    "body_fat": {
+      "type": "number",
+      "description": "Body fat percentage"
+    },
+    "waist": {
+      "type": "number",
+      "description": "Waist measurement in cm"
+    },
+    "chest": {
+      "type": "number",
+      "description": "Chest measurement in cm"
+    },
+    "arms": {
+      "type": "number",
+      "description": "Arm measurement in cm"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "weight"
+  ]
+}

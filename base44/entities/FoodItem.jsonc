@@ -1,0 +1,85 @@
+{
+  "name": "FoodItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Food item name"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand name (e.g. Tesco, Sainsbury's)"
+    },
+    "calories": {
+      "type": "number",
+      "description": "Calories per serving"
+    },
+    "protein": {
+      "type": "number",
+      "description": "Protein in grams per serving"
+    },
+    "carbs": {
+      "type": "number",
+      "description": "Carbohydrates in grams per serving"
+    },
+    "fat": {
+      "type": "number",
+      "description": "Fat in grams per serving"
+    },
+    "sugar": {
+      "type": "number",
+      "description": "Sugar in grams per serving"
+    },
+    "fibre": {
+      "type": "number",
+      "description": "Fibre in grams per serving"
+    },
+    "salt": {
+      "type": "number",
+      "description": "Salt in grams per serving"
+    },
+    "serving_size": {
+      "type": "string",
+      "description": "Serving size description (e.g. 100g, 1 slice)"
+    },
+    "serving_grams": {
+      "type": "number",
+      "description": "Serving size in grams"
+    },
+    "barcode": {
+      "type": "string",
+      "description": "Barcode number"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "fruit",
+        "vegetables",
+        "meat",
+        "fish",
+        "dairy",
+        "grains",
+        "snacks",
+        "drinks",
+        "ready_meals",
+        "bakery",
+        "condiments",
+        "other"
+      ],
+      "description": "Food category"
+    },
+    "is_custom": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a user-created food item"
+    }
+  },
+  "required": [
+    "name",
+    "calories"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "DiaryEntry",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the diary entry"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snacks"
+      ],
+      "description": "Meal category"
+    },
+    "food_name": {
+      "type": "string",
+      "description": "Name of the food item"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand if applicable"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of servings"
+    },
+    "serving_size": {
+      "type": "string",
+      "description": "Serving size description"
+    },
+    "calories": {
+      "type": "number",
+      "description": "Total calories for this entry"
+    },
+    "protein": {
+      "type": "number",
+      "description": "Total protein in grams"
+    },
+    "carbs": {
+      "type": "number",
+      "description": "Total carbs in grams"
+    },
+    "fat": {
+      "type": "number",
+      "description": "Total fat in grams"
+    },
+    "sugar": {
+      "type": "number"
+    },
+    "fibre": {
+      "type": "number"
+    },
+    "salt": {
+      "type": "number"
+    },
+    "food_item_id": {
+      "type": "string",
+      "description": "Reference to FoodItem entity"
+    },
+    "recipe_id": {
+      "type": "string",
+      "description": "Reference to Recipe entity if from a recipe"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Food image URL"
+    }
+  },
+  "required": [
+    "date",
+    "meal_type",
+    "food_name",
+    "calories"
+  ]
+}

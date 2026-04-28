@@ -1,0 +1,60 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "premium"
+      ],
+      "default": "user"
+    },
+    "calorie_goal": {
+      "type": "number",
+      "default": 2000,
+      "description": "Daily calorie target"
+    },
+    "protein_goal": {
+      "type": "number",
+      "default": 150,
+      "description": "Daily protein target in grams"
+    },
+    "carbs_goal": {
+      "type": "number",
+      "default": 250,
+      "description": "Daily carbs target in grams"
+    },
+    "fat_goal": {
+      "type": "number",
+      "default": 65,
+      "description": "Daily fat target in grams"
+    },
+    "goal_weight": {
+      "type": "number",
+      "description": "Target weight in kg"
+    },
+    "height": {
+      "type": "number",
+      "description": "Height in cm"
+    },
+    "activity_level": {
+      "type": "string",
+      "enum": [
+        "sedentary",
+        "light",
+        "moderate",
+        "active",
+        "very_active"
+      ],
+      "default": "moderate"
+    },
+    "water_goal": {
+      "type": "number",
+      "default": 8,
+      "description": "Daily water glasses goal"
+    }
+  },
+  "required": []
+}
