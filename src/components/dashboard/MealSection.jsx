@@ -53,8 +53,15 @@ export default function MealSection({ mealType, entries, date }) {
             {entries.map((entry, i) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors"
               >
+                {entry.image_url && (
+                  <img
+                    src={entry.image_url}
+                    alt={entry.food_name}
+                    className="w-9 h-9 rounded-lg object-cover shrink-0"
+                  />
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{entry.food_name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -62,7 +69,7 @@ export default function MealSection({ mealType, entries, date }) {
                     {entry.serving_size || '1 serving'}
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-foreground ml-3">
+                <span className="text-sm font-semibold text-foreground ml-auto">
                   {entry.calories} kcal
                 </span>
               </div>

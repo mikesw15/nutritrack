@@ -10,6 +10,7 @@ import MacroBar from '@/components/dashboard/MacroBar';
 import DaySummary from '@/components/dashboard/DaySummary';
 import MealSection from '@/components/dashboard/MealSection';
 import WaterTracker from '@/components/dashboard/WaterTracker';
+import DayPhotoGallery from '@/components/dashboard/DayPhotoGallery';
 import { Link } from 'react-router-dom';
 
 const DEFAULT_GOALS = {
@@ -126,6 +127,9 @@ export default function Dashboard() {
           />
         ))}
       </div>
+
+      {/* Photo Gallery */}
+      <DayPhotoGallery entries={entries} />
 
       {/* Water */}
       <WaterTracker
