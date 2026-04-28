@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, Camera, Mic, Sparkles, ArrowLeft, Clock, Star, Loader2 } from 'lucide-react';
+import { Search, ScanBarcode, Sparkles, ArrowLeft, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { getDateString } from '@/lib/dateUtils';
 import FoodSearchResults from '@/components/food/FoodSearchResults';
 import AIFoodInput from '@/components/food/AIFoodInput';
+import BarcodeScanner from '@/components/food/BarcodeScanner';
 
 export default function AddFood() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function AddFood() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('search');
+  const [showScanner, setShowScanner] = useState(false);
 
   const { data: foodItems = [], isLoading: searching } = useQuery({
     queryKey: ['foodSearch', searchQuery],
@@ -82,6 +84,14 @@ export default function AddFood() {
         </div>
       </div>
 
+      {/* Barcode Scanner (inline) */}
+      {showScanner && (
+        <BarcodeScanner
+          onFoodFound={(food) => { handleAddFood(food); setShowScanner(false); }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full grid grid-cols-3 bg-muted rounded-xl">
@@ -97,14 +107,25 @@ export default function AddFood() {
         </TabsList>
 
         <TabsContent value="search" className="mt-3 space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search foods, brands..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-xl bg-muted border-0 h-11"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search foods, brands..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 rounded-xl bg-muted border-0 h-11"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-11 w-11 rounded-xl shrink-0"
+              onClick={() => setShowScanner(v => !v)}
+              title="Scan barcode"
+            >
+              <ScanBarcode className="w-5 h-5" />
+            </Button>
           </div>
           <FoodSearchResults
             results={foodItems}
