@@ -1,0 +1,76 @@
+{
+  "name": "FavouriteMeal",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Favourite meal name"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snacks"
+      ],
+      "description": "Default meal type"
+    },
+    "items": {
+      "type": "array",
+      "description": "Saved meal food items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "food_name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "serving_size": {
+            "type": "string"
+          },
+          "calories": {
+            "type": "number"
+          },
+          "protein": {
+            "type": "number"
+          },
+          "carbs": {
+            "type": "number"
+          },
+          "fat": {
+            "type": "number"
+          },
+          "sugar": {
+            "type": "number"
+          },
+          "fibre": {
+            "type": "number"
+          },
+          "salt": {
+            "type": "number"
+          },
+          "food_item_id": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_calories": {
+      "type": "number",
+      "description": "Total calories in this favourite meal"
+    }
+  },
+  "required": [
+    "name",
+    "items"
+  ]
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Flame, Dumbbell, Droplets, Plus, Minus, X } from 'lucide-react';
@@ -8,6 +8,9 @@ import { getDateString, getNextDate, getPrevDate, formatDate } from '@/lib/dateU
 import CalorieRing from '@/components/dashboard/CalorieRing';
 import MealSection from '@/components/dashboard/MealSection';
 import DayPhotoGallery from '@/components/dashboard/DayPhotoGallery';
+import DailySummaryCard from '@/components/dashboard/DailySummaryCard';
+import DailyFeedback from '@/components/dashboard/DailyFeedback';
+import EngagementCard from '@/components/dashboard/EngagementCard';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_GOALS = {
@@ -66,6 +69,11 @@ export default function Dashboard() {
     queryFn: () => base44.entities.WaterLog.filter({ date: currentDate }),
   });
 
+  const { data: allEntries = [] } = useQuery({
+    queryKey: ['allDiaryEntriesForStreak'],
+    queryFn: () => base44.entities.DiaryEntry.list('-date', 100),
+  });
+
   const waterLog = waterLogs[0];
 
   const waterMutation = useMutation({
@@ -84,8 +92,24 @@ export default function Dashboard() {
   const totalProtein = entries.reduce((s, e) => s + (e.protein || 0), 0);
   const totalCarbs = entries.reduce((s, e) => s + (e.carbs || 0), 0);
   const totalFat = entries.reduce((s, e) => s + (e.fat || 0), 0);
+  const totalSugar = entries.reduce((s, e) => s + (e.sugar || 0), 0);
+  const totalFibre = entries.reduce((s, e) => s + (e.fibre || 0), 0);
   const totalBurned = exercises.reduce((s, e) => s + (e.calories_burned || 0), 0);
   const remaining = Math.max(0, goals.calorie_goal + totalBurned - totalCalories);
+
+  const mealsLogged = mealTypes.filter(type => mealEntries[type].length > 0).length;
+  const loggingStreak = useMemo(() => {
+    const loggedDates = new Set(allEntries.map(entry => entry.date));
+    let streak = 0;
+    let date = getDateString();
+
+    while (loggedDates.has(date)) {
+      streak += 1;
+      date = getPrevDate(date);
+    }
+
+    return streak;
+  }, [allEntries]);
 
   const glasses = waterLog?.glasses || 0;
   const waterGoal = waterLog?.goal || 8;
@@ -110,6 +134,27 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Food and calorie reminders */}
+      {entries.length === 0 && currentDate === getDateString() && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 shadow-sm">
+          <Flame className="w-5 h-5 text-amber-500 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800">You haven’t logged food today</p>
+            <p className="text-xs text-amber-600">Add your first meal to keep your streak going.</p>
+          </div>
+        </div>
+      )}
+
+      {remaining <= 150 && remaining > 0 && totalCalories > 0 && currentDate === getDateString() && (
+        <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3 shadow-sm">
+          <Flame className="w-5 h-5 text-primary shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-primary">You’re close to your calorie goal</p>
+            <p className="text-xs text-primary/80">Only {remaining} calories remaining today.</p>
+          </div>
+        </div>
+      )}
+
       {/* Water reminder banner */}
       {glasses === 0 && currentDate === getDateString() && !waterReminderDismissed && (
         <motion.div
@@ -132,10 +177,20 @@ export default function Dashboard() {
         </motion.div>
       )}
 
+      {/* Premium summary */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <DailySummaryCard consumed={totalCalories} burned={totalBurned} goal={goals.calorie_goal} mealsLogged={mealsLogged} />
+        </div>
+        <EngagementCard streak={loggingStreak} mealsLogged={mealsLogged} />
+      </div>
+
+      <DailyFeedback protein={totalProtein} fibre={totalFibre} sugar={totalSugar} proteinGoal={goals.protein_goal} />
+
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Calories remaining */}
-        <div className="col-span-2 md:col-span-1 bg-card rounded-2xl border border-border p-4">
+        <div className="col-span-2 md:col-span-1 bg-card rounded-3xl border border-border p-5 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground mb-2">Calories Remaining</p>
           <div className="flex items-center gap-3">
             <CalorieRing consumed={totalCalories} goal={goals.calorie_goal} burned={totalBurned} size="sm" />
@@ -148,7 +203,7 @@ export default function Dashboard() {
         </div>
 
         {/* Macros */}
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-2.5">
+        <div className="bg-card rounded-3xl border border-border p-5 space-y-3 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground">Macros</p>
           <MacroRow label="Protein" current={totalProtein} goal={goals.protein_goal} color="bg-blue-500" />
           <MacroRow label="Carbs" current={totalCarbs} goal={goals.carbs_goal} color="bg-amber-400" />
@@ -156,7 +211,7 @@ export default function Dashboard() {
         </div>
 
         {/* Micronutrients placeholder */}
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-2.5">
+        <div className="bg-card rounded-3xl border border-border p-5 space-y-3 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground">Micronutrients</p>
           {[
             { label: 'Sugar', current: entries.reduce((s,e)=>s+(e.sugar||0),0), goal: 90, color: 'bg-amber-400' },
@@ -166,7 +221,7 @@ export default function Dashboard() {
         </div>
 
         {/* Water */}
-        <div className="bg-card rounded-2xl border border-border p-4">
+        <div className="bg-card rounded-3xl border border-border p-5 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground mb-2">Water</p>
           <p className="text-2xl font-bold font-heading text-foreground">
             {(waterMl / 1000).toFixed(1)}L <span className="text-sm font-normal text-muted-foreground">/ {(waterGoalMl / 1000).toFixed(1)}L</span>
@@ -188,7 +243,7 @@ export default function Dashboard() {
       </div>
 
       {/* Meals */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border">
           <h2 className="text-sm font-semibold">Daily Diary</h2>
         </div>

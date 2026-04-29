@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, TrendingUp, UtensilsCrossed, Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -25,6 +26,9 @@ export default function AppLayout() {
             <span className="text-[10px] font-bold text-primary-foreground">N</span>
           </div>
           <span className="font-bold font-heading text-base text-foreground">NutriTrack <span className="text-primary">AI</span></span>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Nav */}
@@ -54,6 +58,11 @@ export default function AppLayout() {
       <main className="flex-1 flex flex-col min-h-screen overflow-auto pb-20 md:pb-0">
         <Outlet />
       </main>
+
+      {/* Theme toggle — mobile */}
+      <div className="md:hidden fixed top-3 right-3 z-50">
+        <ThemeToggle />
+      </div>
 
       {/* Bottom nav — mobile only */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-xl border-t border-border z-50">

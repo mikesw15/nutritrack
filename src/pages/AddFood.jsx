@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, ScanBarcode, Sparkles, ArrowLeft, Clock, Camera, Mic } from 'lucide-react';
+import { Search, ScanBarcode, Sparkles, ArrowLeft, Clock, Camera, Star, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { getDateString } from '@/lib/dateUtils';
+import { getDateString, getPrevDate } from '@/lib/dateUtils';
 import FoodSearchResults from '@/components/food/FoodSearchResults';
 import AIFoodInput from '@/components/food/AIFoodInput';
 import BarcodeScanner from '@/components/food/BarcodeScanner';
 
-const TABS = ['All', 'Recent', 'Frequent', 'Recipes'];
+const TABS = ['All', 'Recent', 'Favourites', 'Recipes'];
 
 export default function AddFood() {
   const navigate = useNavigate();
@@ -35,12 +35,44 @@ export default function AddFood() {
     queryFn: () => base44.entities.DiaryEntry.list('-created_date', 20),
   });
 
+  const { data: favouriteMeals = [] } = useQuery({
+    queryKey: ['favouriteMeals'],
+    queryFn: () => base44.entities.FavouriteMeal.list('-created_date', 20),
+  });
+
+  const { data: yesterdayEntries = [] } = useQuery({
+    queryKey: ['yesterdayEntries', mealType, date],
+    queryFn: () => base44.entities.DiaryEntry.filter({ date: getPrevDate(date), meal_type: mealType }),
+  });
+
   const addEntryMutation = useMutation({
     mutationFn: (data) => base44.entities.DiaryEntry.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diary'] });
       toast.success('Food added to diary');
       navigate('/');
+    },
+  });
+
+  const copyYesterdayMutation = useMutation({
+    mutationFn: () => base44.entities.DiaryEntry.bulkCreate(yesterdayEntries.map(({ id, created_date, updated_date, created_by, ...entry }) => ({ ...entry, date }))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['diary'] });
+      toast.success('Yesterday copied');
+      navigate('/');
+    },
+  });
+
+  const saveFavouriteMutation = useMutation({
+    mutationFn: () => base44.entities.FavouriteMeal.create({
+      name: `${mealLabels[mealType]} favourite`,
+      meal_type: mealType,
+      items: yesterdayEntries,
+      total_calories: yesterdayEntries.reduce((sum, entry) => sum + (entry.calories || 0), 0),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favouriteMeals'] });
+      toast.success('Meal saved as favourite');
     },
   });
 
@@ -66,10 +98,23 @@ export default function AddFood() {
 
   const mealLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snacks: 'Snacks' };
 
+  const addFavouriteMeal = (meal) => {
+    base44.entities.DiaryEntry.bulkCreate((meal.items || []).map(({ id, created_date, updated_date, created_by, ...item }) => ({ ...item, date, meal_type: mealType }))).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['diary'] });
+      toast.success('Favourite meal added');
+      navigate('/');
+    });
+  };
+
   const uniqueRecent = recentEntries.reduce((acc, entry) => {
     if (!acc.find(e => e.food_name === entry.food_name)) acc.push(entry);
     return acc;
   }, []).slice(0, 10);
+
+  const naturalLanguageFoods = searchQuery
+    .split(/,| and | with |\+/i)
+    .map(item => item.trim())
+    .filter(item => item.length > 1);
 
   const displayResults = activeTab === 'Recent' ? uniqueRecent : foodItems;
 
@@ -112,6 +157,27 @@ export default function AddFood() {
             onClick={() => setActiveMode(m => m === 'ai' ? 'search' : 'ai')}
           >
             <Camera className="w-4 h-4" /> AI Photo
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="rounded-xl h-9 text-xs gap-1.5"
+            onClick={() => copyYesterdayMutation.mutate()}
+            disabled={yesterdayEntries.length === 0 || copyYesterdayMutation.isPending}
+          >
+            <Copy className="w-3.5 h-3.5" /> Copy Yesterday
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl h-9 text-xs gap-1.5"
+            onClick={() => saveFavouriteMutation.mutate()}
+            disabled={yesterdayEntries.length === 0 || saveFavouriteMutation.isPending}
+          >
+            <Star className="w-3.5 h-3.5" /> Save Favourite
           </Button>
         </div>
 
@@ -159,23 +225,49 @@ export default function AddFood() {
             {uniqueRecent.map((entry) => (
               <button
                 key={entry.id}
-                className="w-full flex items-center justify-between p-3 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors text-left"
+                className="w-full flex items-center justify-between p-4 bg-card rounded-2xl border border-border shadow-sm hover:bg-muted/50 transition-colors text-left"
                 onClick={() => handleAddFood(entry)}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{entry.food_name}</p>
+                  <p className="text-sm font-semibold truncate">{entry.food_name}</p>
                   <p className="text-xs text-muted-foreground">{entry.serving_size || '1 serving'}</p>
                 </div>
                 <span className="text-sm font-semibold ml-3 text-primary">{entry.calories} kcal</span>
               </button>
             ))}
           </div>
+        ) : activeTab === 'Favourites' ? (
+          <div className="space-y-2">
+            {favouriteMeals.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">No favourite meals yet</p>
+            )}
+            {favouriteMeals.map((meal) => (
+              <button
+                key={meal.id}
+                className="w-full flex items-center justify-between p-4 bg-card rounded-2xl border border-border shadow-sm hover:bg-muted/50 transition-colors text-left"
+                onClick={() => addFavouriteMeal(meal)}
+              >
+                <div>
+                  <p className="text-sm font-semibold">{meal.name}</p>
+                  <p className="text-xs text-muted-foreground">{meal.items?.length || 0} items</p>
+                </div>
+                <span className="text-sm font-semibold text-primary">{meal.total_calories || 0} kcal</span>
+              </button>
+            ))}
+          </div>
         ) : (
-          <FoodSearchResults
-            results={foodItems}
-            searching={searching && searchQuery.length >= 2}
-            onSelect={handleAddFood}
-          />
+          <>
+            {naturalLanguageFoods.length > 1 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 mb-3">
+                Searching for: {naturalLanguageFoods.join(', ')}
+              </div>
+            )}
+            <FoodSearchResults
+              results={foodItems}
+              searching={searching && searchQuery.length >= 2}
+              onSelect={handleAddFood}
+            />
+          </>
         )
       )}
     </div>
