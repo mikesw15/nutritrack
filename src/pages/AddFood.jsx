@@ -26,7 +26,11 @@ export default function AddFood() {
 
   const { data: foodItems = [], isLoading: searching } = useQuery({
     queryKey: ['foodSearch', searchQuery],
-    queryFn: () => base44.entities.FoodItem.filter({ name: { $regex: searchQuery, $options: 'i' } }),
+    queryFn: async () => {
+      const terms = searchQuery.split(/,| and | with |\+/i).map(item => item.trim()).filter(item => item.length >= 2);
+      const searches = await Promise.all(terms.map(term => base44.entities.FoodItem.filter({ name: { $regex: term, $options: 'i' } })));
+      return searches.flat().filter((item, index, list) => list.findIndex(match => match.id === item.id) === index);
+    },
     enabled: searchQuery.length >= 2,
   });
 
