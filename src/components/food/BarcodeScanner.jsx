@@ -16,6 +16,7 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
   const [manualCode, setManualCode] = useState('');
   const [status, setStatus] = useState('starting'); // 'starting' | 'scanning' | 'looking_up' | 'found' | 'not_found' | 'no_support'
   const [result, setResult] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   const stopCamera = () => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -30,6 +31,7 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
     const local = await base44.entities.FoodItem.filter({ barcode: code });
     if (local.length > 0) {
       setResult(local[0]);
+      setQuantity(1);
       setStatus('found');
       return;
     }
@@ -61,6 +63,7 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
       // Save to local DB for next time
       base44.entities.FoodItem.create(food).catch(() => {});
       setResult(food);
+      setQuantity(1);
       setStatus('found');
     } else {
       setStatus('not_found');
@@ -114,7 +117,7 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
   };
 
   const handleAdd = () => {
-    if (result) onFoodFound(result);
+    if (result) onFoodFound(result, quantity);
   };
 
   return (
@@ -241,12 +244,23 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
                   <p className="text-xs text-muted-foreground">{result.serving_size}</p>
                 </div>
               </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Portion / servings</label>
+                <Input
+                  type="number"
+                  min="0.25"
+                  step="0.25"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(0.25, parseFloat(e.target.value) || 1))}
+                  className="rounded-xl"
+                />
+              </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 {[
-                  { label: 'kcal', value: result.calories },
-                  { label: 'protein', value: `${result.protein}g` },
-                  { label: 'carbs', value: `${result.carbs}g` },
-                  { label: 'fat', value: `${result.fat}g` },
+                  { label: 'kcal', value: Math.round((result.calories || 0) * quantity) },
+                  { label: 'protein', value: `${Math.round((result.protein || 0) * quantity * 10) / 10}g` },
+                  { label: 'carbs', value: `${Math.round((result.carbs || 0) * quantity * 10) / 10}g` },
+                  { label: 'fat', value: `${Math.round((result.fat || 0) * quantity * 10) / 10}g` },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-muted rounded-xl p-2">
                     <p className="text-sm font-bold">{value}</p>
@@ -269,10 +283,15 @@ export default function BarcodeScanner({ onFoodFound, onClose }) {
           >
             <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm font-medium">Product not found</p>
-            <p className="text-xs text-muted-foreground mt-1">Try searching by name instead.</p>
-            <Button variant="outline" size="sm" className="mt-3 rounded-xl" onClick={() => { setStatus('scanning'); setResult(null); if (mode === 'camera') startCamera(); }}>
-              Scan Again
-            </Button>
+            <p className="text-xs text-muted-foreground mt-1">Try again or enter the food manually.</p>
+            <div className="flex gap-2 justify-center mt-3">
+              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => { setStatus('scanning'); setResult(null); if (mode === 'camera') startCamera(); }}>
+                Scan Again
+              </Button>
+              <Button size="sm" className="rounded-xl" onClick={onClose}>
+                Manual Entry
+              </Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

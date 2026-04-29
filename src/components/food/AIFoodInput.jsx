@@ -124,33 +124,42 @@ Return the nutritional data for a single serving.`,
       {detectedFood && (
         <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
           <p className="text-sm font-semibold text-primary">AI Detected Food</p>
-          <div>
-            <p className="font-semibold">{detectedFood.name}</p>
-            {detectedFood.brand && <p className="text-xs text-muted-foreground">{detectedFood.brand}</p>}
-            <p className="text-xs text-muted-foreground">{detectedFood.serving_size}</p>
+          <div className="space-y-2">
+            <Input
+              value={detectedFood.name || ''}
+              onChange={(e) => setDetectedFood({ ...detectedFood, name: e.target.value })}
+              placeholder="Food name"
+              className="rounded-xl bg-card"
+            />
+            <Input
+              value={detectedFood.serving_size || ''}
+              onChange={(e) => setDetectedFood({ ...detectedFood, serving_size: e.target.value })}
+              placeholder="Serving size"
+              className="rounded-xl bg-card"
+            />
           </div>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="bg-card rounded-lg p-2">
-              <p className="text-lg font-bold">{detectedFood.calories}</p>
-              <p className="text-[10px] text-muted-foreground">kcal</p>
-            </div>
-            <div className="bg-card rounded-lg p-2">
-              <p className="text-lg font-bold">{detectedFood.protein || 0}</p>
-              <p className="text-[10px] text-muted-foreground">protein</p>
-            </div>
-            <div className="bg-card rounded-lg p-2">
-              <p className="text-lg font-bold">{detectedFood.carbs || 0}</p>
-              <p className="text-[10px] text-muted-foreground">carbs</p>
-            </div>
-            <div className="bg-card rounded-lg p-2">
-              <p className="text-lg font-bold">{detectedFood.fat || 0}</p>
-              <p className="text-[10px] text-muted-foreground">fat</p>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              ['calories', 'Calories'],
+              ['protein', 'Protein (g)'],
+              ['carbs', 'Carbs (g)'],
+              ['fat', 'Fat (g)'],
+            ].map(([field, label]) => (
+              <div key={field} className="space-y-1">
+                <label className="text-[10px] text-muted-foreground">{label}</label>
+                <Input
+                  type="number"
+                  value={detectedFood[field] || 0}
+                  onChange={(e) => setDetectedFood({ ...detectedFood, [field]: parseFloat(e.target.value) || 0 })}
+                  className="rounded-xl bg-card"
+                />
+              </div>
+            ))}
           </div>
           <Button
             onClick={handleAddDetected}
             className="w-full rounded-xl"
-            disabled={isAdding}
+            disabled={isAdding || !detectedFood.name}
           >
             {isAdding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Add to Diary

@@ -137,8 +137,8 @@ export default function AddFood() {
 
       {/* Search bar + action buttons */}
       <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
+        <div className="space-y-2">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search UK foods, brands or barcode..."
@@ -147,21 +147,23 @@ export default function AddFood() {
               className="pl-10 rounded-xl bg-muted border-0 h-10"
             />
           </div>
-          <Button
-            size="sm"
-            className={`rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold ${activeMode === 'scan' ? 'bg-primary' : 'bg-primary/80 hover:bg-primary'}`}
-            onClick={() => setActiveMode(m => m === 'scan' ? 'search' : 'scan')}
-          >
-            <ScanBarcode className="w-4 h-4" /> Scan
-          </Button>
-          <Button
-            size="sm"
-            variant={activeMode === 'ai' ? 'default' : 'secondary'}
-            className="rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold"
-            onClick={() => setActiveMode(m => m === 'ai' ? 'search' : 'ai')}
-          >
-            <Camera className="w-4 h-4" /> AI Photo
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              className="rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold"
+              onClick={() => setActiveMode('scan')}
+            >
+              <ScanBarcode className="w-4 h-4" /> Scan Barcode
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold"
+              onClick={() => setActiveMode('ai')}
+            >
+              <Camera className="w-4 h-4" /> Scan Meal (AI)
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -203,20 +205,35 @@ export default function AddFood() {
         )}
       </div>
 
-      {/* Scanner */}
+      {/* Scanner bottom sheet */}
       {activeMode === 'scan' && (
-        <BarcodeScanner
-          onFoodFound={(food) => { handleAddFood(food); setActiveMode('search'); }}
-          onClose={() => setActiveMode('search')}
-        />
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center p-3">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-auto rounded-3xl">
+            <BarcodeScanner
+              onFoodFound={(food, quantity) => { handleAddFood(food, quantity); setActiveMode('search'); }}
+              onClose={() => setActiveMode('search')}
+            />
+          </div>
+        </div>
       )}
 
-      {/* AI input */}
+      {/* AI input bottom sheet */}
       {activeMode === 'ai' && (
-        <AIFoodInput
-          onFoodDetected={handleAddFood}
-          isAdding={addEntryMutation.isPending}
-        />
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center p-3">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-auto bg-background rounded-3xl border border-border p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">Scan Meal (AI)</h2>
+                <p className="text-xs text-muted-foreground">Take or upload a meal photo.</p>
+              </div>
+              <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => setActiveMode('search')}>Close</Button>
+            </div>
+            <AIFoodInput
+              onFoodDetected={(food) => { handleAddFood(food); setActiveMode('search'); }}
+              isAdding={addEntryMutation.isPending}
+            />
+          </div>
+        </div>
       )}
 
       {/* Results */}
