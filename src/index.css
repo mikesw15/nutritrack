@@ -9,9 +9,10 @@
     --font-heading: 'DM Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    --background: 142 20% 98%;
+    --background: 138 25% 96%;
     --foreground: 150 20% 8%;
     --card: 0 0% 100%;
+    --card-foreground: 150 20% 8%;
     --card-foreground: 150 20% 8%;
     --popover: 0 0% 100%;
     --popover-foreground: 150 20% 8%;
