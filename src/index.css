@@ -102,9 +102,3 @@
   border-radius: 999px;
 }
 
-[aria-label*="Edit with Base44"],
-[title*="Edit with Base44"],
-[data-base44-edit],
-.base44-edit-button {
-  display: none !important;
-}
