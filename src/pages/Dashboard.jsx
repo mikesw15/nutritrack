@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Flame, Dumbbell, Droplets, Plus, Minus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame, Dumbbell, Droplets, Plus, Minus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { getDateString, getNextDate, getPrevDate, formatDate } from '@/lib/dateUtils';
@@ -39,6 +39,7 @@ function MacroRow({ label, current, goal, color }) {
 
 export default function Dashboard() {
   const [currentDate, setCurrentDate] = useState(getDateString());
+  const [waterReminderDismissed, setWaterReminderDismissed] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -108,6 +109,28 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Water reminder banner */}
+      {glasses === 0 && currentDate === getDateString() && !waterReminderDismissed && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3"
+        >
+          <Droplets className="w-5 h-5 text-blue-500 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-blue-800">Don't forget to log your water!</p>
+            <p className="text-xs text-blue-600">You haven't logged any water today. Stay hydrated 💧</p>
+          </div>
+          <button
+            className="shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+            onClick={() => setWaterReminderDismissed(true)}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </motion.div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
