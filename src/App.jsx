@@ -15,6 +15,7 @@ import Recipes from '@/pages/Recipes';
 import Progress from '@/pages/Progress';
 import Profile from '@/pages/Profile';
 import AICoach from '@/pages/AICoach';
+import GroceryList from '@/pages/GroceryList';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/add-food" element={<AddFood />} />
         <Route path="/recipes" element={<Recipes />} />
+        <Route path="/grocery-list" element={<GroceryList />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
