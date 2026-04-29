@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, ScanBarcode, Sparkles, ArrowLeft, Clock, Camera, Star, Copy } from 'lucide-react';
+import { Search, ScanBarcode, ArrowLeft, Camera, Star, Copy, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -10,8 +10,100 @@ import { getDateString, getPrevDate } from '@/lib/dateUtils';
 import FoodSearchResults from '@/components/food/FoodSearchResults';
 import AIFoodInput from '@/components/food/AIFoodInput';
 import BarcodeScanner from '@/components/food/BarcodeScanner';
+import ManualFoodForm from '@/components/food/ManualFoodForm';
 
 const TABS = ['All', 'Recent', 'Favourites', 'Recipes'];
+
+const SUPERMARKET_FOODS = [
+  {
+    id: 'seed-asda-chicken-breast',
+    name: 'Chicken Breast Fillets',
+    brand: 'ASDA',
+    calories: 106,
+    protein: 24,
+    carbs: 0,
+    fat: 1.2,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/505/478/107/1172/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-asda-basmati-rice',
+    name: 'Microwave Basmati Rice',
+    brand: 'ASDA',
+    calories: 164,
+    protein: 3.2,
+    carbs: 34,
+    fat: 1.4,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/505/141/342/0100/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-coop-greek-yogurt',
+    name: 'Greek Style Natural Yogurt',
+    brand: 'Co-op',
+    calories: 97,
+    protein: 5.1,
+    carbs: 4.1,
+    fat: 6.4,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/500/012/874/5445/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-coop-wholemeal-bread',
+    name: 'Wholemeal Bread',
+    brand: 'Co-op',
+    calories: 235,
+    protein: 9,
+    carbs: 39,
+    fat: 3.1,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/500/012/895/1594/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-tesco-bananas',
+    name: 'Bananas',
+    brand: 'Tesco',
+    calories: 89,
+    protein: 1.1,
+    carbs: 20,
+    fat: 0.3,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/000/000/000/5016/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-sainsburys-salmon',
+    name: 'Scottish Salmon Fillets',
+    brand: "Sainsbury's",
+    calories: 208,
+    protein: 20,
+    carbs: 0,
+    fat: 13,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/016/871/48/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-morrisons-eggs',
+    name: 'Free Range Eggs',
+    brand: 'Morrisons',
+    calories: 143,
+    protein: 12.6,
+    carbs: 0.7,
+    fat: 9.5,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/501/025/159/4535/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-aldi-oats',
+    name: 'Porridge Oats',
+    brand: 'Aldi',
+    calories: 374,
+    protein: 11,
+    carbs: 60,
+    fat: 8,
+    serving_size: '100g',
+    image_url: 'https://images.openfoodfacts.org/images/products/408/860/004/4615/front_en.3.400.jpg',
+  },
+];
 
 export default function AddFood() {
   const navigate = useNavigate();
@@ -21,7 +113,7 @@ export default function AddFood() {
   const date = urlParams.get('date') || getDateString();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeMode, setActiveMode] = useState('search'); // 'search' | 'scan' | 'ai'
+  const [activeMode, setActiveMode] = useState('search'); // 'search' | 'scan' | 'ai' | 'manual'
   const [activeTab, setActiveTab] = useState('All');
 
   const { data: foodItems = [], isLoading: searching } = useQuery({
@@ -29,7 +121,10 @@ export default function AddFood() {
     queryFn: async () => {
       const terms = searchQuery.split(/,| and | with |\+/i).map(item => item.trim()).filter(item => item.length >= 2);
       const searches = await Promise.all(terms.map(term => base44.entities.FoodItem.filter({ name: { $regex: term, $options: 'i' } })));
-      return searches.flat().filter((item, index, list) => list.findIndex(match => match.id === item.id) === index);
+      const localMatches = SUPERMARKET_FOODS.filter(food =>
+        terms.some(term => `${food.name} ${food.brand}`.toLowerCase().includes(term.toLowerCase()))
+      );
+      return [...searches.flat(), ...localMatches].filter((item, index, list) => list.findIndex(match => match.id === item.id) === index);
     },
     enabled: searchQuery.length >= 2,
   });
@@ -147,21 +242,29 @@ export default function AddFood() {
               className="pl-10 rounded-xl bg-muted border-0 h-10"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               size="sm"
-              className="rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold"
+              className="rounded-xl h-10 px-2 gap-1 text-xs font-semibold"
               onClick={() => setActiveMode('scan')}
             >
-              <ScanBarcode className="w-4 h-4" /> Scan Barcode
+              <ScanBarcode className="w-4 h-4" /> Barcode
             </Button>
             <Button
               size="sm"
               variant="secondary"
-              className="rounded-xl h-10 px-3 gap-1.5 text-xs font-semibold"
+              className="rounded-xl h-10 px-2 gap-1 text-xs font-semibold"
               onClick={() => setActiveMode('ai')}
             >
-              <Camera className="w-4 h-4" /> Scan Meal (AI)
+              <Camera className="w-4 h-4" /> AI Meal
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl h-10 px-2 gap-1 text-xs font-semibold"
+              onClick={() => setActiveMode('manual')}
+            >
+              <Plus className="w-4 h-4" /> Manual
             </Button>
           </div>
         </div>
@@ -236,6 +339,25 @@ export default function AddFood() {
         </div>
       )}
 
+      {/* Manual entry bottom sheet */}
+      {activeMode === 'manual' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center p-3">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-auto bg-background rounded-3xl border border-border p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">Add Food Manually</h2>
+                <p className="text-xs text-muted-foreground">Enter nutrition values from the label or packaging.</p>
+              </div>
+              <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => setActiveMode('search')}>Close</Button>
+            </div>
+            <ManualFoodForm
+              onAdd={(food) => { handleAddFood(food); setActiveMode('search'); }}
+              isAdding={addEntryMutation.isPending}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Results */}
       {activeMode === 'search' && (
         activeTab === 'Recent' ? (
@@ -246,12 +368,19 @@ export default function AddFood() {
             {uniqueRecent.map((entry) => (
               <button
                 key={entry.id}
-                className="w-full flex items-center justify-between p-4 bg-card rounded-2xl border border-border shadow-sm hover:bg-muted/50 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-4 bg-card rounded-2xl border border-border shadow-sm hover:bg-muted/50 transition-colors text-left"
                 onClick={() => handleAddFood(entry)}
               >
+                {entry.image_url ? (
+                  <img src={entry.image_url} alt={entry.food_name} className="w-11 h-11 rounded-xl object-cover bg-muted" />
+                ) : (
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                    {entry.food_name?.charAt(0)}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold truncate">{entry.food_name}</p>
-                  <p className="text-xs text-muted-foreground">{entry.serving_size || '1 serving'}</p>
+                  <p className="text-xs text-muted-foreground">{entry.brand && `${entry.brand} · `}{entry.serving_size || '1 serving'}</p>
                 </div>
                 <span className="text-sm font-semibold ml-3 text-primary">{entry.calories} kcal</span>
               </button>

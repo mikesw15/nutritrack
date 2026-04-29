@@ -12,9 +12,10 @@ export default function FoodSearchResults({ results, searching, onSelect }) {
 
   if (results.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-8">
-        Search for foods to add to your diary
-      </p>
+      <div className="text-center py-8 space-y-1">
+        <p className="text-sm text-muted-foreground">Search for foods to add to your diary</p>
+        <p className="text-xs text-muted-foreground">Try ASDA chicken, Co-op yoghurt, Tesco bananas or Aldi oats.</p>
+      </div>
     );
   }
 
