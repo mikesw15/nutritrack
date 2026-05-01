@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 export default function AIFoodInput({ onFoodDetected, isAdding }) {
   const [voiceText, setVoiceText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
   const [detectedFood, setDetectedFood] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -43,7 +44,26 @@ Return the nutritional data for a single serving.`,
 
   const handleVoiceSubmit = async () => {
     if (!voiceText.trim()) return;
-    await analyzeWithAI(`The user said they ate: "${voiceText}". Estimate the nutritional values.`);
+    await analyzeWithAI(`The user said they ate: "${voiceText}". Estimate UK nutrition values and infer a complete meal when appropriate.`);
+  };
+
+  const handleVoiceCapture = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Voice logging is not supported on this browser');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-GB';
+    recognition.interimResults = false;
+    recognition.onstart = () => setListening(true);
+    recognition.onend = () => setListening(false);
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || '';
+      setVoiceText(transcript);
+    };
+    recognition.start();
   };
 
   const handleImageUpload = async (e) => {
@@ -71,7 +91,7 @@ Return the nutritional data for a single serving.`,
       <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
         <p className="text-sm font-semibold">Tell me what you ate</p>
         <p className="text-xs text-muted-foreground">
-          e.g. "Chicken breast with rice and broccoli"
+          e.g. “I had a bacon sandwich and coffee”
         </p>
         <div className="flex gap-2">
           <Input
@@ -81,6 +101,15 @@ Return the nutritional data for a single serving.`,
             className="rounded-xl bg-muted border-0"
             onKeyDown={(e) => e.key === 'Enter' && handleVoiceSubmit()}
           />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleVoiceCapture}
+            disabled={loading || listening}
+            className="rounded-xl shrink-0"
+          >
+            {listening ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mic className="w-4 h-4" />}
+          </Button>
           <Button
             onClick={handleVoiceSubmit}
             disabled={loading || !voiceText.trim()}

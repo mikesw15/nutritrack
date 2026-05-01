@@ -1,10 +1,11 @@
 import React from 'react';
-import { Trophy, Flame, Utensils } from 'lucide-react';
+import { Trophy, Flame, Utensils, Target } from 'lucide-react';
 
-export default function EngagementCard({ streak, mealsLogged }) {
+export default function EngagementCard({ streak, mealsLogged, proteinHit, calorieHit }) {
   const achievements = [
     { label: '3 day streak', earned: streak >= 3, icon: Flame },
-    { label: '7 day streak', earned: streak >= 7, icon: Trophy },
+    { label: 'Protein goal', earned: proteinHit, icon: Trophy },
+    { label: 'Calorie goal', earned: calorieHit, icon: Target },
     { label: '3 meals today', earned: mealsLogged >= 3, icon: Utensils },
   ];
 
@@ -19,7 +20,7 @@ export default function EngagementCard({ streak, mealsLogged }) {
           <Flame className="w-6 h-6 text-primary" />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {achievements.map(({ label, earned, icon: Icon }) => (
           <div key={label} className={`rounded-2xl border p-2 text-center ${earned ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/40 border-border text-muted-foreground'}`}>
             <Icon className="w-4 h-4 mx-auto mb-1" />

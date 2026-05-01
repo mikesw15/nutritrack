@@ -11,6 +11,7 @@ import DayPhotoGallery from '@/components/dashboard/DayPhotoGallery';
 import DailySummaryCard from '@/components/dashboard/DailySummaryCard';
 import DailyFeedback from '@/components/dashboard/DailyFeedback';
 import EngagementCard from '@/components/dashboard/EngagementCard';
+import WeeklyReportCard from '@/components/dashboard/WeeklyReportCard';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_GOALS = {
@@ -182,10 +183,17 @@ export default function Dashboard() {
         <div className="md:col-span-2">
           <DailySummaryCard consumed={totalCalories} burned={totalBurned} goal={goals.calorie_goal} mealsLogged={mealsLogged} />
         </div>
-        <EngagementCard streak={loggingStreak} mealsLogged={mealsLogged} />
+        <EngagementCard
+          streak={loggingStreak}
+          mealsLogged={mealsLogged}
+          proteinHit={totalProtein >= goals.protein_goal}
+          calorieHit={totalCalories > 0 && totalCalories <= goals.calorie_goal}
+        />
       </div>
 
       <DailyFeedback protein={totalProtein} fibre={totalFibre} sugar={totalSugar} proteinGoal={goals.protein_goal} />
+
+      <WeeklyReportCard entries={allEntries} />
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

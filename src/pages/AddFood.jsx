@@ -103,6 +103,83 @@ const SUPERMARKET_FOODS = [
     serving_size: '100g',
     image_url: 'https://images.openfoodfacts.org/images/products/408/860/004/4615/front_en.3.400.jpg',
   },
+  {
+    id: 'seed-tesco-chicken-wrap',
+    name: 'Chicken Caesar Wrap',
+    brand: 'Tesco',
+    calories: 430,
+    protein: 24,
+    carbs: 43,
+    fat: 17,
+    serving_size: '1 wrap',
+    image_url: 'https://images.openfoodfacts.org/images/products/505/754/574/2809/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-asda-tuna-pasta',
+    name: 'Tuna Sweetcorn Pasta Salad',
+    brand: 'ASDA',
+    calories: 322,
+    protein: 15,
+    carbs: 38,
+    fat: 11,
+    serving_size: '1 pot',
+    image_url: 'https://images.openfoodfacts.org/images/products/505/407/011/7772/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-sainsburys-meal-deal-sandwich',
+    name: 'BLT Sandwich',
+    brand: "Sainsbury's",
+    calories: 420,
+    protein: 18,
+    carbs: 47,
+    fat: 16,
+    serving_size: '1 sandwich',
+    image_url: 'https://images.openfoodfacts.org/images/products/009/321/91/front_en.3.400.jpg',
+  },
+  {
+    id: 'seed-pret-chicken-avocado',
+    name: 'Chicken Avocado Sandwich',
+    brand: 'Pret A Manger',
+    calories: 520,
+    protein: 31,
+    carbs: 47,
+    fat: 22,
+    serving_size: '1 sandwich',
+    image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    id: 'seed-greggs-sausage-roll',
+    name: 'Sausage Roll',
+    brand: 'Greggs',
+    calories: 329,
+    protein: 10,
+    carbs: 25,
+    fat: 21,
+    serving_size: '1 roll',
+    image_url: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    id: 'seed-mcdonalds-uk-big-mac',
+    name: 'Big Mac',
+    brand: "McDonald's UK",
+    calories: 493,
+    protein: 26,
+    carbs: 42,
+    fat: 24,
+    serving_size: '1 burger',
+    image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    id: 'seed-nandos-half-chicken',
+    name: 'Half Chicken',
+    brand: "Nando's",
+    calories: 568,
+    protein: 76,
+    carbs: 0,
+    fat: 31,
+    serving_size: 'half chicken',
+    image_url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=400&q=80',
+  },
 ];
 
 export default function AddFood() {
@@ -236,7 +313,7 @@ export default function AddFood() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search UK foods, brands or barcode..."
+              placeholder="Search Tesco, Asda, Sainsbury’s, restaurants..."
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setActiveMode('search'); }}
               className="pl-10 rounded-xl bg-muted border-0 h-10"
