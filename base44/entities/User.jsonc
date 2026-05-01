@@ -11,6 +11,27 @@
       ],
       "default": "user"
     },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "goal": {
+      "type": "string",
+      "enum": [
+        "lose_weight",
+        "gain_muscle",
+        "maintain_weight"
+      ],
+      "description": "Primary nutrition goal"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Current weight in kg"
+    },
+    "age": {
+      "type": "number",
+      "description": "Age in years"
+    },
     "calorie_goal": {
       "type": "number",
       "default": 2000,
@@ -31,6 +52,22 @@
       "default": 65,
       "description": "Daily fat target in grams"
     },
+    "calorie_target": {
+      "type": "number",
+      "description": "Alias for daily calorie target"
+    },
+    "protein_target": {
+      "type": "number",
+      "description": "Alias for daily protein target"
+    },
+    "carb_target": {
+      "type": "number",
+      "description": "Alias for daily carb target"
+    },
+    "fat_target": {
+      "type": "number",
+      "description": "Alias for daily fat target"
+    },
     "goal_weight": {
       "type": "number",
       "description": "Target weight in kg"
@@ -42,13 +79,16 @@
     "activity_level": {
       "type": "string",
       "enum": [
+        "low",
+        "medium",
+        "high",
         "sedentary",
         "light",
         "moderate",
         "active",
         "very_active"
       ],
-      "default": "moderate"
+      "default": "medium"
     },
     "water_goal": {
       "type": "number",

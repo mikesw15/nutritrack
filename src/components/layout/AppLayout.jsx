@@ -24,10 +24,12 @@ export default function AppLayout() {
       <aside className="hidden md:flex flex-col w-52 shrink-0 bg-card border-r border-border">
         {/* Logo */}
         <div className="flex items-center gap-2 px-5 py-5 border-b border-border">
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-[10px] font-bold text-primary-foreground">N</span>
-          </div>
-          <span className="font-bold font-heading text-base text-foreground">NutriTrack <span className="text-primary">AI</span></span>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-[10px] font-bold text-primary-foreground">N</span>
+            </div>
+            <span className="font-bold font-heading text-base text-foreground">NutriTrack <span className="text-primary">AI</span></span>
+          </Link>
           <div className="ml-auto">
             <ThemeToggle />
           </div>

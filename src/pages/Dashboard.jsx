@@ -12,6 +12,10 @@ import DailySummaryCard from '@/components/dashboard/DailySummaryCard';
 import DailyFeedback from '@/components/dashboard/DailyFeedback';
 import EngagementCard from '@/components/dashboard/EngagementCard';
 import WeeklyReportCard from '@/components/dashboard/WeeklyReportCard';
+import DashboardAICoachPanel from '@/components/dashboard/DashboardAICoachPanel';
+import FastLoggingPanel from '@/components/dashboard/FastLoggingPanel';
+import WeeklyProgressChart from '@/components/dashboard/WeeklyProgressChart';
+import WeightMiniChart from '@/components/dashboard/WeightMiniChart';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_GOALS = {
@@ -75,6 +79,11 @@ export default function Dashboard() {
     queryFn: () => base44.entities.DiaryEntry.list('-date', 100),
   });
 
+  const { data: weightLogs = [] } = useQuery({
+    queryKey: ['dashboardWeightLogs'],
+    queryFn: () => base44.entities.WeightLog.list('-date', 20),
+  });
+
   const waterLog = waterLogs[0];
 
   const waterMutation = useMutation({
@@ -97,6 +106,11 @@ export default function Dashboard() {
   const totalFibre = entries.reduce((s, e) => s + (e.fibre || 0), 0);
   const totalBurned = exercises.reduce((s, e) => s + (e.calories_burned || 0), 0);
   const remaining = Math.max(0, goals.calorie_goal + totalBurned - totalCalories);
+  const nutritionStatus = totalCalories > goals.calorie_goal + totalBurned
+    ? { label: 'Over target', className: 'bg-red-50 text-red-700 border-red-200' }
+    : remaining > goals.calorie_goal * 0.35 && totalCalories > 0
+      ? { label: 'Under target', className: 'bg-amber-50 text-amber-700 border-amber-200' }
+      : { label: 'On track', className: 'bg-primary/10 text-primary border-primary/20' };
 
   const mealsLogged = mealTypes.filter(type => mealEntries[type].length > 0).length;
   const loggingStreak = useMemo(() => {
@@ -193,7 +207,24 @@ export default function Dashboard() {
 
       <DailyFeedback protein={totalProtein} fibre={totalFibre} sugar={totalSugar} proteinGoal={goals.protein_goal} />
 
+      <div className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${nutritionStatus.className}`}>
+        Today’s status: {nutritionStatus.label} · {remaining} calories remaining
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <FastLoggingPanel date={currentDate} />
+        <DashboardAICoachPanel
+          totals={{ calories: totalCalories, protein: totalProtein, carbs: totalCarbs, fat: totalFat }}
+          goals={goals}
+        />
+      </div>
+
       <WeeklyReportCard entries={allEntries} />
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <WeeklyProgressChart entries={allEntries} />
+        <WeightMiniChart logs={weightLogs} />
+      </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
