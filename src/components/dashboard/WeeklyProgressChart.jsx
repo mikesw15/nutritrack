@@ -4,11 +4,12 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'rec
 
 const dateKey = (date) => format(date, 'yyyy-MM-dd');
 
-export default function WeeklyProgressChart({ entries }) {
+export default function WeeklyProgressChart({ entries = [] }) {
+  const safeEntries = entries.filter(entry => entry?.date);
   const data = Array.from({ length: 7 }).map((_, index) => {
     const date = subDays(new Date(), 6 - index);
     const key = dateKey(date);
-    const calories = entries.filter(entry => entry.date === key).reduce((sum, entry) => sum + (entry.calories || 0), 0);
+    const calories = safeEntries.filter(entry => entry.date === key).reduce((sum, entry) => sum + (Number(entry.calories) || 0), 0);
     return { day: format(date, 'EEE'), calories };
   });
 

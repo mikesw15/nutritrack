@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function CalorieRing({ consumed, goal, burned = 0, size = 'md' }) {
-  const total = goal + burned;
-  const remaining = Math.max(0, total - consumed);
-  const percentage = Math.min((consumed / total) * 100, 100);
+export default function CalorieRing({ consumed = 0, goal = 1, burned = 0, size = 'md' }) {
+  const total = Math.max(Number(goal) + Number(burned), 1);
+  const remaining = Math.max(0, total - Number(consumed));
+  const percentage = Math.min((Number(consumed) / total) * 100, 100);
 
   const isSmall = size === 'sm';
   const dim = isSmall ? 80 : 200;

@@ -6,14 +6,15 @@ const toDateString = (date) => format(date, 'yyyy-MM-dd');
 
 const sumCalories = (entries) => entries.reduce((sum, entry) => sum + (entry.calories || 0), 0);
 
-export default function WeeklyReportCard({ entries }) {
+export default function WeeklyReportCard({ entries = [] }) {
+  const safeEntries = entries.filter(entry => entry?.date);
   const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const thisWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
   const lastWeekStart = subDays(thisWeekStart, 7);
   const lastWeekEnd = subDays(thisWeekEnd, 7);
 
-  const thisWeekEntries = entries.filter(entry => entry.date >= toDateString(thisWeekStart) && entry.date <= toDateString(thisWeekEnd));
-  const lastWeekEntries = entries.filter(entry => entry.date >= toDateString(lastWeekStart) && entry.date <= toDateString(lastWeekEnd));
+  const thisWeekEntries = safeEntries.filter(entry => entry.date >= toDateString(thisWeekStart) && entry.date <= toDateString(thisWeekEnd));
+  const lastWeekEntries = safeEntries.filter(entry => entry.date >= toDateString(lastWeekStart) && entry.date <= toDateString(lastWeekEnd));
   const thisWeekCalories = sumCalories(thisWeekEntries);
   const lastWeekCalories = sumCalories(lastWeekEntries);
   const improvedPercent = lastWeekCalories > 0 ? Math.round(((thisWeekCalories - lastWeekCalories) / lastWeekCalories) * 100) : 0;

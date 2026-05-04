@@ -2,8 +2,12 @@ import React from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format } from 'date-fns';
 
-export default function WeightMiniChart({ logs }) {
-  const data = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-8).map(log => ({ date: format(new Date(log.date), 'd MMM'), weight: log.weight }));
+export default function WeightMiniChart({ logs = [] }) {
+  const data = [...logs]
+    .filter(log => log?.date && !Number.isNaN(new Date(log.date).getTime()) && Number.isFinite(Number(log.weight)))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(-8)
+    .map(log => ({ date: format(new Date(log.date), 'd MMM'), weight: Number(log.weight) }));
 
   return (
     <div className="bg-card rounded-3xl border border-border p-5 shadow-sm space-y-4">
