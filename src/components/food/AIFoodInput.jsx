@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Camera, Mic, Send, Loader2, ImageIcon } from 'lucide-react';
+import { Camera, Mic, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import MealAnalysisReview from '@/components/food/MealAnalysisReview';
 
 export default function AIFoodInput({ onFoodDetected, isAdding }) {
   const [voiceText, setVoiceText] = useState('');
@@ -16,22 +17,30 @@ export default function AIFoodInput({ onFoodDetected, isAdding }) {
     setLoading(true);
     setDetectedFood(null);
     const opts = {
-      prompt: `You are a nutrition expert. Analyze this food and provide accurate nutritional information.
+      prompt: `You are a nutrition expert for UK food tracking. Analyze this meal photo or description.
 ${prompt}
-Return the nutritional data for a single serving.`,
+Identify each visible food item, estimate realistic portion sizes, and calculate nutrition per item. Return itemised estimates plus meal totals.`,
       response_json_schema: {
         type: "object",
         properties: {
-          name: { type: "string", description: "Food name" },
-          brand: { type: "string", description: "Brand if identifiable" },
-          serving_size: { type: "string", description: "Serving size description" },
-          calories: { type: "number" },
-          protein: { type: "number" },
-          carbs: { type: "number" },
-          fat: { type: "number" },
-          sugar: { type: "number" },
-          fibre: { type: "number" },
-          salt: { type: "number" },
+          items: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "Food item name" },
+                portion_size: { type: "string", description: "Estimated portion size, e.g. 150g, 1 slice, 1 tbsp" },
+                calories: { type: "number" },
+                protein: { type: "number" },
+                carbs: { type: "number" },
+                fat: { type: "number" },
+              },
+            },
+          },
+          total_calories: { type: "number" },
+          total_protein: { type: "number" },
+          total_carbs: { type: "number" },
+          total_fat: { type: "number" },
         },
       },
     };
@@ -77,12 +86,10 @@ Return the nutritional data for a single serving.`,
     );
   };
 
-  const handleAddDetected = () => {
-    if (detectedFood) {
-      onFoodDetected(detectedFood);
-      setDetectedFood(null);
-      setVoiceText('');
-    }
+  const handleAddDetected = (food) => {
+    onFoodDetected(food);
+    setDetectedFood(null);
+    setVoiceText('');
   };
 
   return (
@@ -151,49 +158,11 @@ Return the nutritional data for a single serving.`,
 
       {/* Detected food result */}
       {detectedFood && (
-        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-primary">AI Detected Food</p>
-          <div className="space-y-2">
-            <Input
-              value={detectedFood.name || ''}
-              onChange={(e) => setDetectedFood({ ...detectedFood, name: e.target.value })}
-              placeholder="Food name"
-              className="rounded-xl bg-card"
-            />
-            <Input
-              value={detectedFood.serving_size || ''}
-              onChange={(e) => setDetectedFood({ ...detectedFood, serving_size: e.target.value })}
-              placeholder="Serving size"
-              className="rounded-xl bg-card"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              ['calories', 'Calories'],
-              ['protein', 'Protein (g)'],
-              ['carbs', 'Carbs (g)'],
-              ['fat', 'Fat (g)'],
-            ].map(([field, label]) => (
-              <div key={field} className="space-y-1">
-                <label className="text-[10px] text-muted-foreground">{label}</label>
-                <Input
-                  type="number"
-                  value={detectedFood[field] || 0}
-                  onChange={(e) => setDetectedFood({ ...detectedFood, [field]: parseFloat(e.target.value) || 0 })}
-                  className="rounded-xl bg-card"
-                />
-              </div>
-            ))}
-          </div>
-          <Button
-            onClick={handleAddDetected}
-            className="w-full rounded-xl"
-            disabled={isAdding || !detectedFood.name}
-          >
-            {isAdding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Add to Diary
-          </Button>
-        </div>
+        <MealAnalysisReview
+          analysis={detectedFood}
+          onConfirm={handleAddDetected}
+          isAdding={isAdding}
+        />
       )}
     </div>
   );
