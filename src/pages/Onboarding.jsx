@@ -30,11 +30,30 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ goal: 'lose_weight', weight: '', height: '', age: '', activityLevel: 'medium' });
+  const [form, setForm] = useState({
+    goal: 'lose_weight',
+    unitSystem: 'metric',
+    weight: '',
+    height: '',
+    stone: '',
+    pounds: '',
+    feet: '',
+    inches: '',
+    age: '',
+    activityLevel: 'medium',
+  });
+
+  const weightKg = form.unitSystem === 'imperial'
+    ? (Number(form.stone) * 6.35029) + (Number(form.pounds) * 0.453592)
+    : Number(form.weight);
+  const heightCm = form.unitSystem === 'imperial'
+    ? ((Number(form.feet) * 12) + Number(form.inches)) * 2.54
+    : Number(form.height);
+  const hasRequiredDetails = form.age && weightKg > 0 && heightCm > 0;
 
   const targets = calculateTargets({
-    weight: Number(form.weight) || 75,
-    height: Number(form.height) || 175,
+    weight: weightKg || 75,
+    height: heightCm || 175,
     age: Number(form.age) || 30,
     activityLevel: form.activityLevel,
     goal: form.goal,
@@ -44,8 +63,8 @@ export default function Onboarding() {
     mutationFn: () => base44.auth.updateMe({
       onboarding_completed: true,
       goal: form.goal,
-      weight: Number(form.weight),
-      height: Number(form.height),
+      weight: Math.round(weightKg * 10) / 10,
+      height: Math.round(heightCm),
       age: Number(form.age),
       activity_level: form.activityLevel,
       calorie_goal: targets.calories,
@@ -57,9 +76,10 @@ export default function Onboarding() {
       carb_target: targets.carbs,
       fat_target: targets.fat,
     }),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(['currentUser'], updatedUser);
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      navigate('/');
+      navigate('/', { replace: true });
     },
   });
 
@@ -86,8 +106,39 @@ export default function Onboarding() {
 
         {step === 2 && (
           <div className="space-y-3">
-            <Input type="number" placeholder="Weight (kg)" value={form.weight} onChange={(e) => setForm(prev => ({ ...prev, weight: e.target.value }))} className="h-12 rounded-2xl" />
-            <Input type="number" placeholder="Height (cm)" value={form.height} onChange={(e) => setForm(prev => ({ ...prev, height: e.target.value }))} className="h-12 rounded-2xl" />
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
+              {[
+                ['metric', 'Kg / cm'],
+                ['imperial', 'Stone / ft']
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setForm(prev => ({ ...prev, unitSystem: value }))}
+                  className={`h-10 rounded-xl text-xs font-semibold transition-all ${form.unitSystem === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {form.unitSystem === 'metric' ? (
+              <>
+                <Input type="number" placeholder="Weight (kg)" value={form.weight} onChange={(e) => setForm(prev => ({ ...prev, weight: e.target.value }))} className="h-12 rounded-2xl" />
+                <Input type="number" placeholder="Height (cm)" value={form.height} onChange={(e) => setForm(prev => ({ ...prev, height: e.target.value }))} className="h-12 rounded-2xl" />
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="number" placeholder="Stone" value={form.stone} onChange={(e) => setForm(prev => ({ ...prev, stone: e.target.value }))} className="h-12 rounded-2xl" />
+                  <Input type="number" placeholder="Lbs" value={form.pounds} onChange={(e) => setForm(prev => ({ ...prev, pounds: e.target.value }))} className="h-12 rounded-2xl" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="number" placeholder="Feet" value={form.feet} onChange={(e) => setForm(prev => ({ ...prev, feet: e.target.value }))} className="h-12 rounded-2xl" />
+                  <Input type="number" placeholder="Inches" value={form.inches} onChange={(e) => setForm(prev => ({ ...prev, inches: e.target.value }))} className="h-12 rounded-2xl" />
+                </div>
+              </>
+            )}
+
             <Input type="number" placeholder="Age" value={form.age} onChange={(e) => setForm(prev => ({ ...prev, age: e.target.value }))} className="h-12 rounded-2xl" />
             <div className="grid grid-cols-3 gap-2">
               {['low', 'medium', 'high'].map(level => (
@@ -110,7 +161,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        <Button className="w-full h-12 rounded-2xl font-semibold" onClick={() => step < 3 ? setStep(step + 1) : saveMutation.mutate()} disabled={step === 2 && (!form.weight || !form.height || !form.age)}>
+        <Button className="w-full h-12 rounded-2xl font-semibold" onClick={() => step < 3 ? setStep(step + 1) : saveMutation.mutate()} disabled={(step === 2 && !hasRequiredDetails) || saveMutation.isPending}>
           {step < 3 ? <>Continue <ArrowRight className="w-4 h-4" /></> : <>Save Profile <Check className="w-4 h-4" /></>}
         </Button>
       </div>
