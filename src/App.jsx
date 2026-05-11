@@ -16,6 +16,7 @@ import Progress from '@/pages/Progress';
 import Profile from '@/pages/Profile';
 import AICoach from '@/pages/AICoach';
 import GroceryList from '@/pages/GroceryList';
+import MealPlanner from '@/pages/MealPlanner';
 import Onboarding from '@/pages/Onboarding';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
         <Route path="/add-food" element={<AddFood />} />
         <Route path="/recipes" element={<Recipes />} />
         <Route path="/grocery-list" element={<GroceryList />} />
+        <Route path="/meal-planner" element={<MealPlanner />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/profile" element={<Profile />} />
       </Route>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, BookOpen, TrendingUp, UtensilsCrossed, Bot, User, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, UtensilsCrossed, Bot, User, ShoppingCart, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 
@@ -9,6 +9,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/add-food', icon: UtensilsCrossed, label: 'Diary' },
   { path: '/grocery-list', icon: ShoppingCart, label: 'Groceries' },
+  { path: '/meal-planner', icon: CalendarDays, label: 'Planner' },
   { path: '/progress', icon: TrendingUp, label: 'Progress' },
   { path: '/recipes', icon: BookOpen, label: 'Recipes' },
   { path: '/ai-coach', icon: Bot, label: 'AI Coach' },

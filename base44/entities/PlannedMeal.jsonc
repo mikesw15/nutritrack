@@ -1,0 +1,37 @@
+{
+  "name": "PlannedMeal",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Planned meal date"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "description": "Meal category"
+    },
+    "meal_name": {
+      "type": "string",
+      "description": "Planned meal name"
+    },
+    "calories": {
+      "type": "number",
+      "description": "Expected calories"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional meal notes"
+    }
+  },
+  "required": [
+    "date",
+    "meal_type",
+    "meal_name"
+  ]
+}
