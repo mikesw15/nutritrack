@@ -25,6 +25,11 @@ const DEFAULT_GOALS = {
   fat_goal: 65,
 };
 
+const toSafeGoal = (value, fallback, max) => {
+  const numeric = Number(value);
+  return numeric > 0 && numeric <= max ? numeric : fallback;
+};
+
 function MacroRow({ label, current, goal, color }) {
   const pct = goal > 0 ? Math.min((current / goal) * 100, 100) : 0;
   return (
@@ -53,10 +58,10 @@ export default function Dashboard() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const goals = {
-    calorie_goal: Number(user?.calorie_goal) || DEFAULT_GOALS.calorie_goal,
-    protein_goal: Number(user?.protein_goal) || DEFAULT_GOALS.protein_goal,
-    carbs_goal: Number(user?.carbs_goal) || DEFAULT_GOALS.carbs_goal,
-    fat_goal: Number(user?.fat_goal) || DEFAULT_GOALS.fat_goal,
+    calorie_goal: toSafeGoal(user?.calorie_goal, toSafeGoal(user?.calorie_target, DEFAULT_GOALS.calorie_goal, 10000), 10000),
+    protein_goal: toSafeGoal(user?.protein_goal, toSafeGoal(user?.protein_target, DEFAULT_GOALS.protein_goal, 1000), 1000),
+    carbs_goal: toSafeGoal(user?.carbs_goal, toSafeGoal(user?.carb_target, DEFAULT_GOALS.carbs_goal, 1000), 1000),
+    fat_goal: toSafeGoal(user?.fat_goal, toSafeGoal(user?.fat_target, DEFAULT_GOALS.fat_goal, 500), 500),
   };
 
   const { data: entries = [] } = useQuery({

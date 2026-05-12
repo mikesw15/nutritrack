@@ -2,30 +2,29 @@ import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { addDays, endOfWeek, format, startOfWeek, subDays } from 'date-fns';
-import { CalendarDays, ChevronLeft, ChevronRight, Download, Loader2, ShoppingCart } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Copy, Download, Loader2, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GroceryListItem from '@/components/grocery/GroceryListItem';
 
 const getDateString = (date) => format(date, 'yyyy-MM-dd');
 
-const buildGroceryList = (entries) => {
+const buildGroceryList = (meals) => {
   const grouped = new Map();
 
-  entries.forEach((entry) => {
-    const key = [entry.food_name, entry.brand || '', entry.serving_size || 'serving'].join('|').toLowerCase();
-    const current = grouped.get(key) || {
-      name: entry.food_name,
-      brand: entry.brand || '',
-      serving_size: entry.serving_size || 'serving',
-      image_url: entry.image_url || '',
-      quantity: 0,
-      entries: 0,
-    };
+  meals.forEach((meal) => {
+    const names = String(meal.notes || meal.meal_name || '')
+      .split(/,|\n|\+| and /i)
+      .map(item => item.trim())
+      .filter(Boolean);
+    const items = names.length ? names : [meal.meal_name];
 
-    current.quantity = Math.round((current.quantity + (entry.quantity || 1)) * 100) / 100;
-    current.entries += 1;
-    if (!current.image_url && entry.image_url) current.image_url = entry.image_url;
-    grouped.set(key, current);
+    items.forEach((name) => {
+      const key = name.toLowerCase();
+      const current = grouped.get(key) || { name, brand: '', serving_size: 'planned meal ingredient', image_url: '', quantity: 0, entries: 0 };
+      current.quantity += 1;
+      current.entries += 1;
+      grouped.set(key, current);
+    });
   });
 
   return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -37,21 +36,30 @@ export default function GroceryList() {
   const startDate = getDateString(weekStart);
   const endDate = getDateString(weekEnd);
 
-  const { data: diaryEntries = [], isLoading } = useQuery({
-    queryKey: ['weeklyGroceryDiary', startDate, endDate],
-    queryFn: () => base44.entities.DiaryEntry.list('-date', 500),
+  const [boughtItems, setBoughtItems] = useState({});
+
+  const { data: plannedMeals = [], isLoading } = useQuery({
+    queryKey: ['weeklyGroceryPlannedMeals', startDate, endDate],
+    queryFn: () => base44.entities.PlannedMeal.list('-date', 500),
   });
 
-  const weeklyEntries = useMemo(() => (
-    diaryEntries.filter(entry => entry.date >= startDate && entry.date <= endDate)
-  ), [diaryEntries, startDate, endDate]);
+  const weeklyMeals = useMemo(() => (
+    plannedMeals.filter(meal => meal.date >= startDate && meal.date <= endDate)
+  ), [plannedMeals, startDate, endDate]);
 
-  const groceryItems = useMemo(() => buildGroceryList(weeklyEntries), [weeklyEntries]);
+  const groceryItems = useMemo(() => buildGroceryList(weeklyMeals), [weeklyMeals]);
+
+  const copyToClipboard = () => {
+    const text = groceryItems
+      .map(item => `${boughtItems[item.name] ? '✓' : '☐'} ${item.quantity}x ${item.name}`)
+      .join('\n');
+    navigator.clipboard.writeText(`Grocery list ${startDate} to ${endDate}\n\n${text}`);
+  };
 
   const exportCsv = () => {
     const rows = [
-      ['Food', 'Brand', 'Quantity', 'Serving size', 'Diary entries'],
-      ...groceryItems.map(item => [item.name, item.brand, item.quantity, item.serving_size, item.entries]),
+      ['Bought', 'Food', 'Quantity', 'Serving size', 'Planned meals'],
+      ...groceryItems.map(item => [boughtItems[item.name] ? 'Yes' : 'No', item.name, item.quantity, item.serving_size, item.entries]),
     ];
     const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -73,12 +81,17 @@ export default function GroceryList() {
             </div>
             <div>
               <h1 className="text-xl font-bold font-heading">Weekly Grocery List</h1>
-              <p className="text-xs text-muted-foreground">Consolidated from diary entries planned this week.</p>
+              <p className="text-xs text-muted-foreground">Automatically generated from meals in your Meal Planner.</p>
             </div>
           </div>
-          <Button onClick={exportCsv} disabled={groceryItems.length === 0} className="rounded-xl gap-2">
-            <Download className="w-4 h-4" /> Export CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={copyToClipboard} disabled={groceryItems.length === 0} className="rounded-xl gap-2">
+              <Copy className="w-4 h-4" /> Copy
+            </Button>
+            <Button onClick={exportCsv} disabled={groceryItems.length === 0} className="rounded-xl gap-2">
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mt-5 bg-muted rounded-2xl p-2">
@@ -103,15 +116,22 @@ export default function GroceryList() {
         <div className="bg-card rounded-3xl border border-border p-8 text-center shadow-sm">
           <ShoppingCart className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm font-semibold">No planned foods this week</p>
-          <p className="text-xs text-muted-foreground mt-1">Add meals to your diary for this week and they’ll appear here.</p>
+          <p className="text-xs text-muted-foreground mt-1">Plan meals in the Meal Planner and they’ll appear here automatically.</p>
         </div>
       ) : (
         <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
             <p className="text-sm font-semibold">{groceryItems.length} grocery items</p>
-            <p className="text-xs text-muted-foreground">From {weeklyEntries.length} diary entries</p>
+            <p className="text-xs text-muted-foreground">From {weeklyMeals.length} planned meals</p>
           </div>
-          {groceryItems.map(item => <GroceryListItem key={`${item.name}-${item.brand}-${item.serving_size}`} item={item} />)}
+          {groceryItems.map(item => (
+            <GroceryListItem
+              key={`${item.name}-${item.brand}-${item.serving_size}`}
+              item={item}
+              checked={!!boughtItems[item.name]}
+              onToggle={() => setBoughtItems(prev => ({ ...prev, [item.name]: !prev[item.name] }))}
+            />
+          ))}
         </div>
       )}
     </div>
