@@ -2,8 +2,11 @@ import React from 'react';
 import { Activity, Target, Utensils, Dumbbell } from 'lucide-react';
 
 export default function DailySummaryCard({ consumed, burned, goal, mealsLogged }) {
-  const remaining = Math.max(0, goal + burned - consumed);
-  const pct = Math.min((consumed / Math.max(goal + burned, 1)) * 100, 100);
+  const safeConsumed = Number(consumed) || 0;
+  const safeBurned = Number(burned) || 0;
+  const safeGoal = Number(goal) || 0;
+  const remaining = Math.max(0, Math.round(safeGoal + safeBurned - safeConsumed));
+  const pct = Math.min((safeConsumed / Math.max(safeGoal + safeBurned, 1)) * 100, 100);
 
   return (
     <div className="bg-card rounded-3xl border border-border shadow-sm p-5 space-y-4">
@@ -22,12 +25,12 @@ export default function DailySummaryCard({ consumed, burned, goal, mealsLogged }
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="rounded-2xl bg-muted/50 p-3">
           <Utensils className="w-4 h-4 mx-auto text-primary mb-1" />
-          <p className="text-sm font-bold">{consumed}</p>
+          <p className="text-sm font-bold">{Math.round(safeConsumed)}</p>
           <p className="text-[10px] text-muted-foreground">Food</p>
         </div>
         <div className="rounded-2xl bg-muted/50 p-3">
           <Dumbbell className="w-4 h-4 mx-auto text-amber-500 mb-1" />
-          <p className="text-sm font-bold">{burned}</p>
+          <p className="text-sm font-bold">{Math.round(safeBurned)}</p>
           <p className="text-[10px] text-muted-foreground">Exercise</p>
         </div>
         <div className="rounded-2xl bg-muted/50 p-3">

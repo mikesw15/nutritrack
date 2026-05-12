@@ -53,10 +53,10 @@ export default function Dashboard() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const goals = {
-    calorie_goal: user?.calorie_goal || DEFAULT_GOALS.calorie_goal,
-    protein_goal: user?.protein_goal || DEFAULT_GOALS.protein_goal,
-    carbs_goal: user?.carbs_goal || DEFAULT_GOALS.carbs_goal,
-    fat_goal: user?.fat_goal || DEFAULT_GOALS.fat_goal,
+    calorie_goal: Number(user?.calorie_goal) || DEFAULT_GOALS.calorie_goal,
+    protein_goal: Number(user?.protein_goal) || DEFAULT_GOALS.protein_goal,
+    carbs_goal: Number(user?.carbs_goal) || DEFAULT_GOALS.carbs_goal,
+    fat_goal: Number(user?.fat_goal) || DEFAULT_GOALS.fat_goal,
   };
 
   const { data: entries = [] } = useQuery({
@@ -98,13 +98,13 @@ export default function Dashboard() {
   const mealEntries = {};
   mealTypes.forEach(type => { mealEntries[type] = entries.filter(e => e.meal_type === type); });
 
-  const totalCalories = entries.reduce((s, e) => s + (e.calories || 0), 0);
-  const totalProtein = entries.reduce((s, e) => s + (e.protein || 0), 0);
-  const totalCarbs = entries.reduce((s, e) => s + (e.carbs || 0), 0);
-  const totalFat = entries.reduce((s, e) => s + (e.fat || 0), 0);
-  const totalSugar = entries.reduce((s, e) => s + (e.sugar || 0), 0);
-  const totalFibre = entries.reduce((s, e) => s + (e.fibre || 0), 0);
-  const totalBurned = exercises.reduce((s, e) => s + (e.calories_burned || 0), 0);
+  const totalCalories = entries.reduce((s, e) => s + (Number(e.calories) || 0), 0);
+  const totalProtein = entries.reduce((s, e) => s + (Number(e.protein) || 0), 0);
+  const totalCarbs = entries.reduce((s, e) => s + (Number(e.carbs) || 0), 0);
+  const totalFat = entries.reduce((s, e) => s + (Number(e.fat) || 0), 0);
+  const totalSugar = entries.reduce((s, e) => s + (Number(e.sugar) || 0), 0);
+  const totalFibre = entries.reduce((s, e) => s + (Number(e.fibre) || 0), 0);
+  const totalBurned = exercises.reduce((s, e) => s + (Number(e.calories_burned) || 0), 0);
   const remaining = Math.max(0, goals.calorie_goal + totalBurned - totalCalories);
   const nutritionStatus = totalCalories > goals.calorie_goal + totalBurned
     ? { label: 'Over target', className: 'bg-red-50 text-red-700 border-red-200' }
@@ -216,6 +216,8 @@ export default function Dashboard() {
         <DashboardAICoachPanel
           totals={{ calories: totalCalories, protein: totalProtein, carbs: totalCarbs, fat: totalFat }}
           goals={goals}
+          calorieBudget={remaining}
+          date={currentDate}
         />
       </div>
 
