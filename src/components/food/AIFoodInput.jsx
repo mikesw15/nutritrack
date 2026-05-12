@@ -28,6 +28,7 @@ Identify each visible food item, estimate realistic portion sizes, and calculate
             items: {
               type: "object",
               properties: {
+                dish_name: { type: "string", description: "Best guess for the overall dish name" },
                 name: { type: "string", description: "Food item name" },
                 portion_size: { type: "string", description: "Estimated portion size, e.g. 150g, 1 slice, 1 tbsp" },
                 calories: { type: "number" },

@@ -16,6 +16,7 @@ import DashboardAICoachPanel from '@/components/dashboard/DashboardAICoachPanel'
 import FastLoggingPanel from '@/components/dashboard/FastLoggingPanel';
 import WeeklyProgressChart from '@/components/dashboard/WeeklyProgressChart';
 import WeightMiniChart from '@/components/dashboard/WeightMiniChart';
+import ExerciseSuggestionCard from '@/components/dashboard/ExerciseSuggestionCard';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_GOALS = {
@@ -97,6 +98,11 @@ export default function Dashboard() {
       return base44.entities.WaterLog.create({ date: currentDate, glasses: newGlasses, goal: 8 });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['water', currentDate] }),
+  });
+
+  const exerciseMutation = useMutation({
+    mutationFn: (exercise) => base44.entities.ExerciseEntry.create(exercise),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercises', currentDate] }),
   });
 
   const mealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
@@ -223,6 +229,14 @@ export default function Dashboard() {
           goals={goals}
           calorieBudget={remaining}
           date={currentDate}
+        />
+        <ExerciseSuggestionCard
+          caloriesConsumed={totalCalories}
+          calorieGoal={goals.calorie_goal}
+          caloriesBurned={totalBurned}
+          date={currentDate}
+          onLogExercise={(exercise) => exerciseMutation.mutate(exercise)}
+          isLogging={exerciseMutation.isPending}
         />
       </div>
 

@@ -35,7 +35,7 @@ export default function MealAnalysisReview({ analysis, onConfirm, isAdding }) {
   const removeItem = (index) => setItems(current => current.filter((_, i) => i !== index));
 
   const handleConfirm = () => {
-    const names = items.map(item => item.name).filter(Boolean);
+    const names = items.map(item => item.dish_name || item.name).filter(Boolean);
     onConfirm({
       name: names.length ? `AI meal: ${names.join(', ')}` : 'AI analysed meal',
       serving_size: items.map(item => `${item.name || 'Item'} (${item.portion_size || 'portion'})`).join(', '),
