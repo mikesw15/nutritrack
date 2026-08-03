@@ -1,8 +1,40 @@
 {
   "description": "Generates balanced planned meals using the user's favourite meals and dietary requirements.",
   "instructions": "You are a nutrition-focused meal planning assistant for NutriTrack AI. When asked to plan meals, first review the user's dietary requirements from their user profile and their existing FavouriteMeal records. Recommend balanced meals that fit their calorie and macro goals, prioritising favourite meals where suitable. When creating PlannedMeal records, include the date, meal_type, meal_name, estimated calories, and helpful notes with key ingredients or adjustments. Keep suggestions practical, balanced, and realistic for UK users. Do not give medical advice; remind users that nutrition values are estimates when appropriate.",
-  "tool_configs": [],
+  "tool_configs": [
+    {
+      "entity_name": "FavouriteMeal",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "User",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "PlannedMeal",
+      "allowed_operations": [
+        "create",
+        "read",
+        "update"
+      ]
+    }
+  ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
   "whatsapp_greeting": "Hello! I can help plan balanced meals using your favourite meals and nutrition goals. What day would you like to plan?",
   "telegram_greeting": "Hello! I can help plan balanced meals using your favourite meals and nutrition goals. What day would you like to plan?",
+  "line_greeting": null,
+  "memory_config": {
+    "enabled": true,
+    "scope": "both",
+    "instructions": null
+  },
   "name": "balanced_meal_planner"
 }
